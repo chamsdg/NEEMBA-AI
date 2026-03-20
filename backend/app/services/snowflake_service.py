@@ -66,7 +66,7 @@ Tu assistes l'équipe de NEEMBA Mali pour l'analyse de données et la générati
             
             logger.info(f"Appel à {agent}")
             
-            response = self.session.post(url, json=payload, stream=True, timeout=(30, 300))
+            response = self.session.post(url, json=payload, stream=True, timeout=(30, 60))
             
             if response.status_code >= 400:
                 logger.error(f"Erreur {response.status_code}")
@@ -178,18 +178,18 @@ Tu assistes l'équipe de NEEMBA Mali pour l'analyse de données et la générati
         if not text:
             return text
         
+        # Approche simple : supprimer les doublons exactes et quasi-doublons
         lines = text.split('\n')
         result = []
-        seen_blocks = set()
-        i = 0
+        seen_content = []
         
+        i = 0
         while i < len(lines):
             line = lines[i]
             stripped = line.strip()
             
             # Ligne vide
             if not stripped:
-                # Ajouter des lignes vides seulement si la dernière n'était pas vide
                 if result and result[-1].strip():
                     result.append(line)
                 i += 1
@@ -199,19 +199,23 @@ Tu assistes l'équipe de NEEMBA Mali pour l'analyse de données et la générati
             if stripped.startswith('|'):
                 table_lines = []
                 j = i
-                # Collecter les lignes du tableau (avec séparateurs)
-                while j < len(lines) and (lines[j].strip().startswith('|') or (lines[j].strip() and lines[j].strip().replace('-', '').replace('|', '').replace(':', '').replace(' ', '') == '')):
+                while j < len(lines) and (lines[j].strip().startswith('|') or (lines[j].strip() and all(c in '-| :' for c in lines[j].replace(' ', '')))):
                     table_lines.append(lines[j])
                     j += 1
                 
-                # Créer une signature plus robuste du tableau
-                # Utiliser seulement le contenu cellulaire (sans |, -, :, espaces)
-                table_content = '|'.join([cell.strip() for line in table_lines for cell in line.split('|') if cell.strip()])
-                table_key = 'TABLE:' + hashlib.md5(table_content.encode()).hexdigest()
+                # Normaliser le contenu du tableau (ignorer les espaces et variations mineures)
+                normalized_table = '\n'.join(table_lines).replace(' ', '').replace('%', '')
                 
-                if table_key not in seen_blocks:
+                # Vérifier si ce tableau existe déjà
+                is_duplicate = False
+                for seen in seen_content:
+                    if seen['type'] == 'table' and seen['content'] == normalized_table:
+                        is_duplicate = True
+                        break
+                
+                if not is_duplicate:
                     result.extend(table_lines)
-                    seen_blocks.add(table_key)
+                    seen_content.append({'type': 'table', 'content': normalized_table})
                 
                 i = j
                 continue
@@ -220,45 +224,23 @@ Tu assistes l'équipe de NEEMBA Mali pour l'analyse de données et la générati
             if stripped.startswith('```'):
                 code_lines = [line]
                 j = i + 1
-                fence_count = 1
-                while j < len(lines) and fence_count < 2:
+                while j < len(lines) and not (lines[j].strip().startswith('```') and j > i + 1):
                     code_lines.append(lines[j])
-                    if lines[j].strip().startswith('```'):
-                        fence_count += 1
+                    j += 1
+                if j < len(lines):
+                    code_lines.append(lines[j])
                     j += 1
                 
-                code_content = '\n'.join(code_lines)
-                code_key = 'CODE:' + hashlib.md5(code_content.encode()).hexdigest()
-                
-                if code_key not in seen_blocks:
+                code_text = '\n'.join(code_lines)
+                if code_text not in seen_content:
                     result.extend(code_lines)
-                    seen_blocks.add(code_key)
+                    seen_content.append(code_text)
                 
                 i = j
                 continue
             
-            # Détection des en-têtes (headings)
-            if stripped.startswith('#'):
-                heading_key = 'HEADING:' + stripped
-                if heading_key not in seen_blocks:
-                    result.append(line)
-                    seen_blocks.add(heading_key)
-                i += 1
-                continue
-            
-            # Texte normal - ajouter seulement si on n'a pas vu ce bloc auparavant
-            text_block = stripped
-            block_key = 'TEXT:' + hashlib.md5(text_block.encode()).hexdigest()
-            
-            # Limiter la détection de doublons pour le texte normal (seulement pour les gros blocs)
-            if len(text_block) > 50:
-                if block_key not in seen_blocks:
-                    result.append(line)
-                    seen_blocks.add(block_key)
-            else:
-                # Pour les petites lignes, toujours ajouter
-                result.append(line)
-            
+            # Sinon, ajouter la ligne normalement
+            result.append(line)
             i += 1
         
         # Nettoyer les excès d'espaces
