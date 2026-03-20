@@ -180,7 +180,7 @@ Tu assistes l'équipe de NEEMBA Mali pour l'analyse de données et la générati
         
         lines = text.split('\n')
         result = []
-        seen_lines = set()
+        seen_hashes = set()
         i = 0
         
         while i < len(lines):
@@ -189,7 +189,6 @@ Tu assistes l'équipe de NEEMBA Mali pour l'analyse de données et la générati
             
             # Ligne vide
             if not stripped:
-                # Garder une ligne vide si la dernière n'était pas vide
                 if result and result[-1].strip():
                     result.append(line)
                 i += 1
@@ -207,21 +206,35 @@ Tu assistes l'équipe de NEEMBA Mali pour l'analyse de données et la générati
                 table_content = '\n'.join(table_lines).replace(' ', '').replace('%', '')
                 table_hash = hashlib.md5(table_content.encode()).hexdigest()
                 
-                if table_hash not in seen_lines:
+                if table_hash not in seen_hashes:
                     result.extend(table_lines)
-                    seen_lines.add(table_hash)
+                    seen_hashes.add(table_hash)
                 
                 i = j
                 continue
             
-            # Sinon, vérifier si on a déjà cette ligne/section
-            # Crée un hash du contenu (sans espaces inutiles)
-            normalized_line = ' '.join(stripped.split())
-            line_hash = hashlib.md5(normalized_line.encode()).hexdigest()
+            # Pour chaque ligne, créer deux versions du hash:
+            # 1. Exact: contenu exact normalisé
+            # 2. Fuzzy: sans caractères spéciaux (pour détecter les titres avec variations)
             
-            if line_hash not in seen_lines:
-                result.append(line)
-                seen_lines.add(line_hash)
+            exact_hash = hashlib.md5(' '.join(stripped.split()).encode()).hexdigest()
+            fuzzy_content = re.sub(r'[^a-zA-Z0-9]', '', stripped.lower())
+            fuzzy_hash = hashlib.md5(fuzzy_content.encode()).hexdigest()
+            
+            # Ne pas dupliquer si:
+            # - C'est un doublon exact, OU
+            # - C'est un titre (commence par #) et contient le même contenu fuzzy
+            if exact_hash not in seen_hashes:
+                should_add = True
+                if stripped.startswith('#') or stripped.startswith('-'):
+                    if fuzzy_hash in seen_hashes:
+                        should_add = False
+                
+                if should_add:
+                    result.append(line)
+                    seen_hashes.add(exact_hash)
+                    if stripped.startswith('#'):
+                        seen_hashes.add(fuzzy_hash)
             
             i += 1
         
