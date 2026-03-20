@@ -1,0 +1,233 @@
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #f8fafc;
+}
+
+.settings-container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.settings-page h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1d1d1b;
+  margin-bottom: 2rem;
+}
+
+.settings-section {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.settings-section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1d1d1b;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-info h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1d1d1b;
+  margin: 0 0 0.25rem 0;
+}
+
+.setting-info p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  border-color: #fec900;
+  background-color: #fffbea;
+}
+
+.theme-toggle.dark {
+  border-color: #fec900;
+  background-color: #1d1d1b;
+  color: #fec900;
+}
+
+.theme-toggle.light {
+  border-color: #fec900;
+  color: #1d1d1b;
+}
+
+.theme-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.toggle-label {
+  font-size: 0.875rem;
+}
+
+.setting-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background-color: white;
+  color: #1d1d1b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: #fec900;
+  box-shadow: 0 0 0 3px rgba(254, 201, 0, 0.2);
+}
+
+.toggle-checkbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.toggle-checkbox input {
+  display: none;
+}
+
+.toggle-checkbox span {
+  width: 3rem;
+  height: 1.5rem;
+  background-color: #d1d5db;
+  border-radius: 9999px;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-checkbox input:checked + span {
+  background-color: #fec900;
+}
+
+.toggle-checkbox span::after {
+  content: '';
+  position: absolute;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: white;
+  border-radius: 50%;
+  top: 0.125rem;
+  left: 0.125rem;
+  transition: left 0.3s ease;
+}
+
+.toggle-checkbox input:checked + span::after {
+  left: 1.625rem;
+}
+
+/* Mode sombre */
+:root.dark-mode {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --border-color: #404040;
+}
+
+:root.dark-mode .settings-page {
+  background-color: #0f0f0f;
+}
+
+:root.dark-mode .settings-container {
+  background-color: #0f0f0f;
+}
+
+:root.dark-mode .settings-page h1 {
+  color: #e5e7eb;
+}
+
+:root.dark-mode .settings-section {
+  background-color: #1a1a1a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+:root.dark-mode .settings-section h2 {
+  color: #e5e7eb;
+  border-bottom-color: #404040;
+}
+
+:root.dark-mode .setting-item {
+  border-bottom-color: #404040;
+}
+
+:root.dark-mode .setting-info h3 {
+  color: #e5e7eb;
+}
+
+:root.dark-mode .setting-info p {
+  color: #9ca3af;
+}
+
+:root.dark-mode .theme-toggle {
+  background-color: #2d2d2d;
+  border-color: #404040;
+  color: #e5e7eb;
+}
+
+:root.dark-mode .theme-toggle:hover {
+  background-color: #3a3a3a;
+  border-color: #fec900;
+}
+
+:root.dark-mode .theme-toggle.dark {
+  background-color: #1a1a1a;
+  border-color: #fec900;
+}
+
+:root.dark-mode .setting-select {
+  background-color: #2d2d2d;
+  color: #e5e7eb;
+  border-color: #404040;
+}
+
+:root.dark-mode .setting-select:focus {
+  border-color: #fec900;
+  box-shadow: 0 0 0 3px rgba(254, 201, 0, 0.2);
+}
